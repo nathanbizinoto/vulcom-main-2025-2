@@ -1,10 +1,20 @@
 import prisma from '../database/client.js'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 
 const controller = {}     // Objeto vazio
 
 controller.create = async function(req, res) {
   try {
+
+    // Verifica se existe o campo "password" em "req.body".
+    // Caso positivo, geramos o hash da senha antes de enviá-la
+    // ao BD
+    // (12 na chamada a bcrypt.hash() corresponde ao número de
+    // passos de criptografia utilizados no processo)
+    if(req.body.password) {
+      req.body.password = await bcrypt.hash(req.body.password, 12)
+    }
 
     await prisma.user.create({ data: req.body })
 
@@ -55,6 +65,15 @@ controller.retrieveOne = async function(req, res) {
 
 controller.update = async function(req, res) {
   try {
+
+    // Verifica se existe o campo "password" em "req.body".
+    // Caso positivo, geramos o hash da senha antes de enviá-la
+    // ao BD
+    // (12 na chamada a bcrypt.hash() corresponde ao número de
+    // passos de criptografia utilizados no processo)
+    if(req.body.password) {
+      req.body.password = await bcrypt.hash(req.body.password, 12)
+    }
 
     const result = await prisma.user.update({
       where: { id: Number(req.params.id) },
@@ -118,8 +137,12 @@ controller.login = async function(req, res) {
 
       // Usuário encontrado, vamos conferir a senha
       let passwordIsValid
-      if(req.body?.username === 'admin' && req.body?.password === 'admin123') passwordIsValid = true
-      else passwordIsValid = user.password === req.body?.password
+      if(req.body?.username === 'admin' && req.body?.password === 'admin123') {
+        passwordIsValid = true
+      } else {
+        // Usa bcrypt.compare() para comparar a senha em texto claro com o hash armazenado
+        passwordIsValid = await bcrypt.compare(req.body?.password, user.password)
+      }
 
       // Se a senha estiver errada, retorna
       // HTTP 401: Unauthorized
@@ -135,10 +158,10 @@ controller.login = async function(req, res) {
       // Formamos o cookie para enviar ao front-end
       res.cookie(process.env.AUTH_COOKIE_NAME, token, {
         httpOnly: true, // O cookie ficará inacessível para o JS no front-end
-        secure: true,   // O cookie será criptografado em conexões https
-        sameSite: 'None',
+        secure: process.env.NODE_ENV === 'production', // Secure apenas em produção
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Configuração adequada para ambiente
         path: '/',
-        maxAge: 24 * 60 * 60 * 100  // 24h
+        maxAge: 24 * 60 * 60 * 1000  // 24h (corrigido: estava 100 ao invés de 1000ms)
       })
 
       // Retorna o token e o usuário autenticado com
