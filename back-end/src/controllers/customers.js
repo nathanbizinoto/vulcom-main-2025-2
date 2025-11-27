@@ -62,6 +62,10 @@ controller.retrieveOne = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API1:2023 - Falha de autenticação a nível de objeto
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação de propriedade ou permissão antes de permitir a atualização, impedindo que usuários modifiquem dados de clientes sem autorização adequada.
+*/
 controller.update = async function(req, res) {
   try {
     const result = await prisma.customer.update({
@@ -82,6 +86,10 @@ controller.update = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API5:2023 - Falha de autenticação a nível de função
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação do campo is_admin do usuário autenticado, permitindo apenas administradores excluírem clientes do sistema.
+*/
 controller.delete = async function(req, res) {
   try {
     await prisma.customer.delete({

@@ -29,6 +29,10 @@ controller.create = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API5:2023 - Falha de autenticação a nível de função
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação do campo is_admin do usuário autenticado, permitindo apenas administradores listarem todos os usuários do sistema.
+*/
 controller.retrieveAll = async function(req, res) {
   try {
     const result = await prisma.user.findMany(
@@ -124,6 +128,10 @@ controller.delete = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API2:2023 - Falha de autenticação
+Esta vulnerabilidade foi evitada no código ao implementar autenticação segura com JWT tokens com expiração, hash bcrypt para senhas, middleware de verificação obrigatório e cookies HTTPOnly.
+*/
 controller.login = async function(req, res) {
   try {
 

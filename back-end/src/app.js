@@ -10,6 +10,10 @@ const app = express()
 
 import cors from 'cors'
 
+/*
+Vulnerabilidade: API8:2023 - Má configuração de segurança
+Esta vulnerabilidade foi evitada no código ao implementar Helmet.js para headers de segurança, Content Security Policy (CSP), HSTS para HTTPS obrigatório e configuração adequada de cookies HTTPOnly.
+*/
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
